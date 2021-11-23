@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.item {
+  @apply font-medium text-xs opacity-40;
+}
+
+.item.selected {
+  @apply text-3xl opacity-100;
+}
