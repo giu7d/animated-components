@@ -1,73 +1,90 @@
-import type { FC } from "react";
+import type { FC, PointerEvent } from "react";
 import React, { useState } from "react";
-import { Reorder } from "framer-motion";
+import { Reorder, useDragControls } from "framer-motion";
+
+const SELECTED_VARIANT = "selected";
+
+const DEFAULT_VARIANT = "default";
 
 const VARIANTS = {
-  selected: {
+  [SELECTED_VARIANT]: {
     fontSize: "1.5rem",
     fontWeight: 500,
     opacity: 1,
   },
-  default: {
-    fontSize: "0.8rem",
+  [DEFAULT_VARIANT]: {
+    fontSize: "0.75rem",
     fontWeight: 500,
     opacity: 0.4,
   },
 };
 
-interface Props {
-  navigationItems?: string[];
-  pages?: number;
+interface Page {
+  id: string;
+  title: string;
 }
 
-export const NavigationMobile: FC<Props> = ({
-  navigationItems = [],
-  pages = 3,
-}) => {
-  const [items, setItems] = useState(navigationItems);
+interface Props {
+  pages: Page[];
+}
 
-  const handlePagination = (index: number) => {
-    const middleIndex = Math.floor(pages / 2);
+export const NavigationMobile: FC<Props> = ({ pages }) => {
+  const [items, setItems] = useState(pages);
+  const [selectedPageId, setSelectedPageId] = useState(pages[0].id);
+  const [visibleSection, setVisibleSection] = useState([0, 2]);
+  const dragControl = useDragControls();
 
-    if (index === middleIndex) return;
+  const handlePagination = (page: Page) => {
+    const index = items.indexOf(page);
+    const endIndex = index + 2;
 
-    if (index < middleIndex) {
-      const last = items.at(-1);
-      if (!last) return;
-      const filteredItem = items.filter((element) => element != last);
-      return setItems([last, ...filteredItem]);
-    }
+    setSelectedPageId(page.id);
 
-    const [first, ...rest] = items;
-    return setItems([...rest, first]);
+    if (index === 0) return setVisibleSection([index, endIndex]);
+
+    setVisibleSection([index - 1, endIndex]);
   };
 
-  const getVisibleItems = () => {
-    return items.slice(0, pages);
+  const getVisibleSection = () => {
+    const [start, end] = visibleSection;
+    return items.slice(start, end);
   };
 
-  const getSelectedStyle = (index: number) => {
-    return index === 1 ? "selected" : "default";
+  const getSelectedStyle = (page: Page) => {
+    return page.id === selectedPageId ? SELECTED_VARIANT : DEFAULT_VARIANT;
+  };
+
+  const isSelectedPageTheFirstItem = () => {
+    const index = items.findIndex((page) => page.id === selectedPageId);
+    return index === 0;
+  };
+
+  const isSelectedPageTheLastItem = () => {
+    const index = items.findIndex((page) => page.id === selectedPageId);
+    return index === items.length - 1;
   };
 
   return (
     <nav className="flex flex-col gap-1 uppercase">
       <Reorder.Group values={items} onReorder={setItems}>
-        {getVisibleItems().map((element, index) => (
+        {isSelectedPageTheFirstItem() && <div className="text-xs ">&nbsp;</div>}
+        {getVisibleSection().map((page) => (
           <Reorder.Item
-            key={element}
-            value={element}
-            initial="default"
+            key={page.id}
+            value={page}
+            initial={DEFAULT_VARIANT}
             variants={VARIANTS}
             className="cursor-pointer"
             transition={{ ease: "easeInOut" }}
-            animate={getSelectedStyle(index)}
-            onClick={() => handlePagination(index)}
+            animate={getSelectedStyle(page)}
+            onClick={() => handlePagination(page)}
             dragListener={false}
+            dragControls={dragControl}
           >
-            {element}
+            {page.title}
           </Reorder.Item>
         ))}
+        {isSelectedPageTheLastItem() && <div className="text-xs ">&nbsp;</div>}
       </Reorder.Group>
     </nav>
   );

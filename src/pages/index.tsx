@@ -1,8 +1,6 @@
 import type { NextPage } from "next";
 import { NavigationMobile } from "@/components/NavigationMobile";
 
-const ITEMS = ["inicio", "quem somos", "o que fazemos", "portfolio", "contato"];
-
 const PAGES = [
   {
     id: "#home",
@@ -29,8 +27,8 @@ const PAGES = [
 const Home: NextPage = () => {
   return (
     <main className="bg-gray-200 h-screen flex flex-col gap-6 items-center justify-center">
-      <div className="flex rounded-3xl shadow-xl w-1/2 p-6 bg-black text-white">
-        <NavigationMobile navigationItems={ITEMS} />
+      <div className="flex rounded-3xl shadow-xl w-5/6 md:w-1/2 p-6 bg-black text-white">
+        <NavigationMobile pages={PAGES} />
       </div>
     </main>
   );
